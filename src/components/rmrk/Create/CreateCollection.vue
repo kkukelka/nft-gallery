@@ -210,15 +210,18 @@ export default class CreateCollection extends Mixins(
 
     try {
       showNotification(`Creating Collection: ${this.rmrkMint.name}`)
-      const metadata = await this.constructMeta()
-      // const metadata = 'ipfs://ipfs/QmaCWgK91teVsQuwLDt56m2xaUfBCCJLeCsPeJyHEenoES'
+      // const metadata = await this.constructMeta()
+      const metadata = 'ipfs://ipfs/QmaCWgK91teVsQuwLDt56m2xaUfBCCJLeCsPeJyHEenoES'
 
       const { api } = Connector.getInstance()
-      const cb = api.tx.nft.createClass
+      const cb = api.tx.utility.batchAll
 
       const randomId = await this.generateNewCollectionId()
 
-      const args = NFTUtils.createCollection(randomId, this.accountId, metadata)
+      const create = api.tx.uniques.create(randomId, this.accountId)
+      // Option to freeze metadata
+      const meta = api.tx.uniques.setClassMetadata(randomId, metadata, false)
+      const args = [[create, meta]]
       const tx = await exec(
         this.accountId,
         '',

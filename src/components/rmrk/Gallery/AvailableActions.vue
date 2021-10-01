@@ -34,8 +34,9 @@ import nftById from '@/queries/nftById.graphql'
 import Null from '@/params/components/Null.vue'
 import NFTUtils, { NFTAction } from '@/components/bsx/NftUtils'
 
-const ownerActions: NFTAction[] = [NFTAction.SEND, NFTAction.CONSUME, NFTAction.LIST]
-const buyActions: NFTAction[] = [NFTAction.BUY]
+const ownerActions: NFTAction[] = [NFTAction.SEND, NFTAction.CONSUME, NFTAction.DELEGATE, NFTAction.FREEZE]
+// const buyActions: NFTAction[] = [NFTAction.BUY]
+const delegatorActions: NFTAction[] = [NFTAction.SEND]
 
 const needMeta: Record<string, string> = {
   SEND: 'AddressInput',
@@ -46,8 +47,8 @@ type DescriptionTuple = [string, string] | [string];
 const iconResolver: Record<string, DescriptionTuple> = {
   SEND: ['is-info is-dark'],
   CONSUME: ['is-danger'],
-  LIST: ['is-light'],
-  BUY: ['is-success is-dark']
+  DELEGATE: ['is-light'],
+  FREEZE: ['is-warning is-dark'],
 }
 
 const actionResolver: Record<string, [string, string]> = {
@@ -60,8 +61,6 @@ const actionResolver: Record<string, [string, string]> = {
   // LIST: ['is-light'],
   // BUY: ['is-success is-dark']
 }
-
-type Action = 'SEND' | 'CONSUME' | 'FREEZE' | 'DELEGATE' | '';
 
 const components = {
   AddressInput: () => import('@/components/shared/AddressInput.vue'),
@@ -85,11 +84,13 @@ export default class AvailableActions extends Mixins(RmrkVersionMixin) {
   protected status = ''
 
   get actions() {
-    return this.isOwner
-      ? ownerActions
-      : this.isAvailableToBuy
-        ? buyActions
-        : []
+    if (this.isOwner) {
+      return ownerActions
+    }
+    if (this.isDelegator) {
+      return delegatorActions
+    }
+    return []
   }
 
   get showSubmit() {
@@ -160,17 +161,8 @@ export default class AvailableActions extends Mixins(RmrkVersionMixin) {
     }`
   }
 
-  get isBuy() {
-    return this.selectedAction === 'BUY'
-  }
   get isConsume() {
     return this.selectedAction === 'CONSUME'
-  }
-  get isList() {
-    return this.selectedAction === 'LIST'
-  }
-  get isSend() {
-    return this.selectedAction === 'SEND'
   }
 
   protected updateMeta(value: string | number) {

@@ -3,16 +3,20 @@ type Id = string | number;
 export enum NFTAction {
   SEND='SEND',
   CONSUME='CONSUME',
-  BUY='BUY',
-  LIST='LIST',
+  FREEZE='FREEZE',
+  DELEGATE='DELEGATE',
+  THAW='THAW',
+  REVOKE='REVOKE',
   NONE='',
 }
 
 export const actionResolver: Record<NFTAction, [string, string]> = {
-  SEND: ['nft','transfer'],
-  CONSUME: ['nft','burn'],
-  BUY: ['marketplace','buy'],
-  LIST: ['marketplace', 'setPrice'],
+  SEND: ['uniques','transfer'],
+  CONSUME: ['uniques','burn'],
+  DELEGATE: ['uniques','approveTransfer'],
+  FREEZE: ['uniques','freeze'],
+  THAW: ['uniques','thaw'],
+  REVOKE: ['uniques','cancelApproval'],
   '': ['',''],
 }
 
@@ -29,10 +33,11 @@ class NFTUtils {
     switch (selectedAction) {
     case NFTAction.SEND:
     case NFTAction.CONSUME:
-    case NFTAction.LIST:
+    case NFTAction.DELEGATE:
       return [classId, id, meta]
-    case NFTAction.BUY:
-      return [meta, classId, id]
+    case NFTAction.FREEZE:
+    case NFTAction.THAW:
+      return [classId, id]
     default:
       throw new Error('Action not found')
     }
@@ -46,11 +51,13 @@ class NFTUtils {
   static correctMeta(selectedAction: NFTAction, meta: string, currentOwner: string): string {
     switch (selectedAction) {
     case NFTAction.SEND:
-    case NFTAction.LIST:
+    case NFTAction.DELEGATE:
       return meta
     case NFTAction.CONSUME:
-    case NFTAction.BUY:
       return currentOwner
+    case NFTAction.FREEZE:
+    case NFTAction.THAW:
+      return ''
     default:
       throw new Error('Action not found')
     }

@@ -278,18 +278,24 @@ export default class CreateToken extends Mixins(
     this.isLoading = true
     this.status = 'loader.ipfs'
     const { api } = Connector.getInstance()
+    const { id, alreadyMinted } = this.selectedCollection
 
     try {
-      const metadata = await this.constructMeta()
-      // const metadata = 'ipfs://ipfs/QmaCWgK91teVsQuwLDt56m2xaUfBCCJLeCsPeJyHEenoES'
+      // const metadata = await this.constructMeta()
+      const metadata = 'ipfs://ipfs/QmaCWgK91teVsQuwLDt56m2xaUfBCCJLeCsPeJyHEenoES'
       // missin possibility to handle more than one remark
-
-      const cb = this.createApiCall()
 
       // do not rely on alreadyMinted, it is not always accurate
       // do not rely subscribe to the collection, it is not always accurate
       // DEV: fetch nft ids from the collection, and reccomend next id
-      const args = this.createApiParams(metadata)
+      const cb = api.tx.utility.batchAll
+      // do not rely on alreadyMinted, it is not always accurate
+      // do not rely subscribe to the collection, it is not always accurate
+      // DEV: fetch nft ids from the collection, and reccomend next id
+      const create = api.tx.uniques.mint(id, alreadyMinted, this.accountId)
+      // Option to freeze metadata
+      const meta = api.tx.uniques.setMetadata(id, alreadyMinted, metadata, false)
+      const args = [[create, meta]]
 
 
       const tx = await exec(
