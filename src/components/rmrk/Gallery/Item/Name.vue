@@ -47,10 +47,15 @@
     <template v-if="nft.delegate">
     <p class="label">
         {{ $t('delegate') }}
+        <span>
+        <a class="has-text-danger"><b-icon icon="times">
+        </b-icon></a>
+        </span>
       </p>
     <p class="subtitle is-size-6">
         <ProfileLink :address="nft.delegate" :showTwitter="true"/>
         <b-skeleton :count="1" size="is-large" :active="isLoading"></b-skeleton>
+
       </p>
     </template>
   </div>

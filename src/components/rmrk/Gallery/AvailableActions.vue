@@ -40,7 +40,8 @@ const delegatorActions: NFTAction[] = [NFTAction.SEND]
 
 const needMeta: Record<string, string> = {
   SEND: 'AddressInput',
-  LIST: 'BalanceInput'
+  LIST: 'BalanceInput',
+  DELEGATE: 'AddressInput',
 }
 
 type DescriptionTuple = [string, string] | [string];
@@ -49,6 +50,7 @@ const iconResolver: Record<string, DescriptionTuple> = {
   CONSUME: ['is-danger'],
   DELEGATE: ['is-light'],
   FREEZE: ['is-warning is-dark'],
+  REVOKE: ['is-warning is-dark'],
 }
 
 const actionResolver: Record<string, [string, string]> = {
@@ -85,7 +87,7 @@ export default class AvailableActions extends Mixins(RmrkVersionMixin) {
 
   get actions() {
     if (this.isOwner) {
-      return ownerActions
+      return this.delegateId ? [...ownerActions, NFTAction.REVOKE] : ownerActions
     }
     if (this.isDelegator) {
       return delegatorActions
