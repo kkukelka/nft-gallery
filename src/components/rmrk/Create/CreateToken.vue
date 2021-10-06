@@ -39,6 +39,11 @@
       <b-field>
         <PasswordInput v-model="password" :account="accountId" />
       </b-field>
+            <b-field>
+      <p class="has-text-weight-medium is-size-6 has-text-warning">
+        {{ $t("mint.deposit") }}: <Money :value="deposit" inline />
+      </p>
+      </b-field>
       <b-field>
         <b-button
           type="is-primary"
@@ -167,6 +172,7 @@ export default class CreateToken extends Mixins(
   private hasCarbonOffset = true;
   private filePrice = 0;
   protected arweaveUpload = false;
+  protected deposit = '0'
 
   get accountId() {
     return this.$store.getters.getAuthAddress
@@ -177,6 +183,15 @@ export default class CreateToken extends Mixins(
     if (shouldUpdate(value, oldVal)) {
       this.fetchCollections()
     }
+  }
+
+  public mounted(): void {
+    setTimeout(this.fetchDeposit, 1000)
+  }
+
+  private fetchDeposit() {
+    const { api } = Connector.getInstance()
+    this.deposit = api.consts.uniques.instanceDeposit.toString()
   }
 
   public async fetchCollections() {

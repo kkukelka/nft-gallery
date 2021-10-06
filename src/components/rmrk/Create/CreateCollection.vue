@@ -69,6 +69,11 @@
         <PasswordInput v-model="password" :account="accountId" />
       </b-field>
       <b-field>
+      <p class="has-text-weight-medium is-size-6 has-text-warning">
+        {{ $t("mint.deposit") }}: <Money :value="collectionDeposit" inline />
+      </p>
+      </b-field>
+      <b-field>
         <b-button
           type="is-primary"
           icon-left="paper-plane"
@@ -114,6 +119,7 @@ const components = {
   Tooltip: () => import('@/components/shared/Tooltip.vue'),
   Support: () => import('@/components/shared/Support.vue'),
   Loader: () => import('@/components/shared/Loader.vue'),
+  Money: () => import('@/components/shared/format/Money.vue'),
 }
 
 @Component({ components })
@@ -130,6 +136,7 @@ export default class CreateCollection extends Mixins(
   private password = '';
   private hasSupport = true;
   protected unlimited = true;
+  protected collectionDeposit = '';
 
   get accountId() {
     return this.$store.getters.getAuthAddress
@@ -173,7 +180,16 @@ export default class CreateCollection extends Mixins(
     return unSanitizeIpfsUrl(metaHash)
   }
 
-  protected async canSupport() {
+  public mounted(): void {
+    setTimeout(this.fetchDeposit, 1000)
+  }
+
+  private fetchDeposit() {
+    const { api } = Connector.getInstance()
+    this.collectionDeposit = api.consts.uniques.classDeposit.toString()
+  }
+
+  protected async canSupport(): Promise<unknown[]> {
     if (this.hasSupport && this.image) {
       return [await supportTx(this.image)]
     }
@@ -203,7 +219,7 @@ export default class CreateCollection extends Mixins(
     return Number(newId)
   }
 
-  protected async submit() {
+  protected async submit(): Promise<void> {
     this.isLoading = true
     this.status = 'loader.ipfs'
 
