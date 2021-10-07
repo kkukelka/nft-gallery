@@ -113,11 +113,6 @@ import collectionForMint from '@/queries/bsx/collectionForMint.graphql'
 import TransactionMixin from '@/utils/mixins/txMixin'
 import ChainMixin from '@/utils/mixins/chainMixin'
 import shouldUpdate from '@/utils/shouldUpdate'
-import {
-  nsfwAttribute,
-  offsetAttribute,
-  secondaryFileVisible,
-} from './mintUtils'
 import { formatBalance } from '@polkadot/util'
 import { DispatchError } from '@polkadot/types/interfaces'
 import { APIKeys, pinFile as pinFileToIPFS  } from '@/pinata'
