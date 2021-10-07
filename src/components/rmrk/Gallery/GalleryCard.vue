@@ -4,35 +4,21 @@
       <div class="card-image" v-if="image">
         <span v-if="emoteCount" class="card-image__emotes">
           <b-icon icon="heart" />
-          <span class="card-image__emotes__count">{{
-            emoteCount
-          }}</span>
+          <span class="card-image__emotes__count">{{ emoteCount }}</span>
         </span>
-
-        <b-image
-          :src="image"
-          :src-fallback="placeholder"
-          :alt="title || 'Simple image'"
-          ratio="1by1"
-        ></b-image>
-          <span v-if="price > 0" class="card-image__price">
-            <Money :value="price" inline />
-          </span>
+        <BasicImage :src="image" :alt="title" customClass="gallery__image-wrapper" />
+        <span v-if="price > 0" class="card-image__price">
+          <Money :value="price" inline />
+        </span>
       </div>
 
       <div v-else class="card-image">
         <span v-if="emoteCount" class="card-image__emotes">
           <b-icon icon="heart" />
-          <span class="card-image__emotes__count">{{
-            emoteCount
-          }}</span>
+          <span class="card-image__emotes__count">{{ emoteCount }}</span>
         </span>
 
-        <b-image
-          :src="placeholder"
-          alt="Simple image"
-          ratio="1by1"
-        ></b-image>
+        <b-image :src="placeholder" alt="Simple image" ratio="1by1"></b-image>
 
         <span v-if="price > 0" class="card-image__price">
           <Money :value="price" inline />
@@ -54,14 +40,14 @@
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { get, update } from 'idb-keyval'
 import shouldUpdate from '@/utils/shouldUpdate'
-import { sanitizeIpfsUrl, fetchNFTMetadata, getSanitizer } from '../utils'
+import { fetchNFTMetadata, getSanitizer } from '../utils'
 import { NFT } from '../service/scheme'
 
 
 const components = {
   LinkResolver: () => import('@/components/shared/LinkResolver.vue'),
   Money: () => import('@/components/shared/format/Money.vue'),
-
+  BasicImage: () => import('@/components/shared/view/BasicImage.vue'),
 }
 
 @Component({ components })
@@ -77,7 +63,7 @@ export default class GalleryCard extends Vue {
   @Prop() public price!: string;
   @Prop() public metadata!: string;
   @Prop() public currentOwner!: string;
-  @Prop(Function) public formatId!: (id: string) => string | object;
+  @Prop(Function) public formatId!: (id: string) => string | Record<string, unknown>;
 
 
   private placeholder = '/koda300x300.svg';
@@ -86,19 +72,21 @@ export default class GalleryCard extends Vue {
     return this.name || this.title
   }
 
-  get params(): string | object {
+  get params(): string | Record<string, unknown> {
     return this.formatId ? this.formatId(this.id) : this.id
   }
 
   async mounted() {
-
     if (this.metadata) {
       const meta = await get(this.metadata)
       if (meta) {
         this.image = getSanitizer(meta.image || '')(meta.image || '')
         this.title = meta.name
       } else {
-        const m = await fetchNFTMetadata({ metadata: this.metadata } as NFT, getSanitizer(this.metadata, undefined, 'permafrost'))
+        const m = await fetchNFTMetadata(
+          { metadata: this.metadata } as NFT,
+          getSanitizer(this.metadata, undefined, 'permafrost')
+        )
         this.image = getSanitizer(m.image || '')(m.image || '')
         this.title = m.name
         update(this.metadata, () => m)
@@ -124,7 +112,6 @@ export default class GalleryCard extends Vue {
 </script>
 
 <style lang="scss">
-
 .nft-card {
   border-radius: 8px;
   position: relative;
@@ -148,7 +135,7 @@ export default class GalleryCard extends Vue {
     }
     transition: all 0.3s;
 
-    .card-image{
+    .card-image {
       &__emotes {
         position: absolute;
         background-color: #d32e79;
@@ -220,5 +207,4 @@ export default class GalleryCard extends Vue {
     }
   }
 }
-
 </style>

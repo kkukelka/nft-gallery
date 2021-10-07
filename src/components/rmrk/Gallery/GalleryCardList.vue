@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
+import { Component, Prop, Vue } from 'vue-property-decorator'
 import { RmrkType } from '@/components/rmrk/service/scheme'
 
 const components = {
@@ -33,6 +33,6 @@ export default class GalleryCardList extends Vue {
   @Prop({ default: 'nftDetail' }) public type!: string;
   @Prop({ default: 'rmrk/detail' }) public link!: string;
   @Prop() public items!: RmrkType[];
-  @Prop(Function) public formatId!: (id: string) => string | object;
+  @Prop(Function) public formatId!: (id: string) => string | Record<string, unknown>;
 }
 </script>
