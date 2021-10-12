@@ -23,6 +23,19 @@
         accept="image/png, image/jpeg, image/gif, image/svg+xml, image/svg"
       />
 
+      <b-field grouped :label="$i18n.t('id')">
+        <b-input
+          placeholder="3-5 character long name"
+          maxlength="10"
+          @keydown.native.space.prevent
+          v-model="id"
+          pattern="[0-9]{1,10}"
+          expanded
+          class="mr-0"
+        ></b-input>
+        <Tooltip iconsize="is-medium" :label="$i18n.t('tooltip.name')" />
+      </b-field>
+
       <b-field grouped :label="$i18n.t('Name')">
         <b-input
           placeholder="Name your collection"
@@ -32,18 +45,6 @@
           spellcheck="true"
         ></b-input>
         <Tooltip iconsize="is-medium" :label="$i18n.t('tooltip.name')" />
-      </b-field>
-      <b-field>
-        <b-switch v-model="unlimited" :rounded="false">
-          {{ $t("mint.unlimited") }}
-        </b-switch>
-      </b-field>
-      <b-field v-if="!unlimited" :label="$i18n.t('Maximum NFTs in collection')">
-        <b-numberinput
-          v-model="rmrkMint.max"
-          placeholder="1 is minumum"
-          :min="1"
-        ></b-numberinput>
       </b-field>
       <b-field grouped :label="$i18n.t('Symbol')" class="mb-0">
         <b-input
@@ -110,7 +111,6 @@ import { generateId } from '@/components/rmrk/service/Consolidator'
 import { supportTx, calculateCost } from '@/utils/support'
 import TransactionMixin from '@/utils/mixins/txMixin'
 import existingCollectionList from '@/queries/bsx/existingCollectionList.graphql'
-import NFTUtils from '@/components/bsx/NftUtils'
 
 const components = {
   Auth: () => import('@/components/shared/Auth.vue'),
@@ -137,7 +137,7 @@ export default class CreateCollection extends Mixins(
   private hasSupport = true;
   protected unlimited = true;
   protected collectionDeposit = '';
-
+  protected id = '0'
   get accountId() {
     return this.$store.getters.getAuthAddress
   }
@@ -168,7 +168,7 @@ export default class CreateCollection extends Mixins(
       ...this.rmrkMint,
       ...this.meta,
       attributes: [],
-      external_url: 'https://basilisk.kodadot.xyz'
+      external_url: 'https://nft.kodadot.xyz'
     }
 
     // TODO: upload image to IPFS
@@ -226,13 +226,14 @@ export default class CreateCollection extends Mixins(
 
     try {
       showNotification(`Creating Collection: ${this.rmrkMint.name}`)
-      // const metadata = await this.constructMeta()
-      const metadata = 'ipfs://ipfs/QmaCWgK91teVsQuwLDt56m2xaUfBCCJLeCsPeJyHEenoES'
+      const metadata = await this.constructMeta()
+      // const metadata = 'ipfs://ipfs/QmaCWgK91teVsQuwLDt56m2xaUfBCCJLeCsPeJyHEenoES'
 
       const { api } = Connector.getInstance()
       const cb = api.tx.utility.batchAll
 
-      const randomId = await this.generateNewCollectionId()
+      // const randomId = await this.generateNewCollectionId()
+      const randomId = Number(this.id)
 
       const create = api.tx.uniques.create(randomId, this.accountId)
       // Option to freeze metadata

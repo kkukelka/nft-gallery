@@ -113,7 +113,6 @@ import collectionForMint from '@/queries/bsx/collectionForMint.graphql'
 import TransactionMixin from '@/utils/mixins/txMixin'
 import ChainMixin from '@/utils/mixins/chainMixin'
 import shouldUpdate from '@/utils/shouldUpdate'
-import { formatBalance } from '@polkadot/util'
 import { DispatchError } from '@polkadot/types/interfaces'
 import { APIKeys, pinFile as pinFileToIPFS  } from '@/pinata'
 
@@ -280,7 +279,7 @@ export default class CreateToken extends Mixins(
     return [calls]
   }
 
-  protected async submit() {
+  protected async submit(): Promise<void> {
     if (!this.selectedCollection) {
       throw ReferenceError('[MINT] Unable to mint without collection')
     }
@@ -291,8 +290,8 @@ export default class CreateToken extends Mixins(
     const { id, alreadyMinted } = this.selectedCollection
 
     try {
-      // const metadata = await this.constructMeta()
-      const metadata = 'ipfs://ipfs/QmaCWgK91teVsQuwLDt56m2xaUfBCCJLeCsPeJyHEenoES'
+      const metadata = await this.constructMeta()
+      // const metadata = 'ipfs://ipfs/QmaCWgK91teVsQuwLDt56m2xaUfBCCJLeCsPeJyHEenoES'
       // missin possibility to handle more than one remark
 
       // do not rely on alreadyMinted, it is not always accurate
@@ -373,7 +372,7 @@ export default class CreateToken extends Mixins(
     }
   }
 
-  protected calculateSerialNumber(index: number) {
+  protected calculateSerialNumber(index: number): string {
     return String(index + this.alreadyMinted + 1).padStart(16, '0')
   }
 
@@ -397,7 +396,7 @@ export default class CreateToken extends Mixins(
     this.isLoading = false
   }
 
-  protected navigateToDetail(nft: NFT, blockNumber: string) {
+  protected navigateToDetail(nft: NFT, blockNumber: string): void {
     showNotification('You will go to the detail in 2 seconds')
     const go = () => this.$router.push({ name: 'nftDetail', params: { id: getNftId(nft, blockNumber) }, query: { message: 'congrats' } })
     setTimeout(go, 2000)

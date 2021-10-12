@@ -26,7 +26,7 @@
         spellcheck="true"
       ></b-input>
     </b-field>
-    <b-field grouped :label="$i18n.t('Edition')">
+    <!-- <b-field grouped :label="$i18n.t('Edition')">
       <b-numberinput
         v-model="vEdition"
         placeholder="1 is minumum"
@@ -35,7 +35,7 @@
         :max="clickableMax"
       ></b-numberinput>
       <Tooltip iconsize="is-medium" :label="$i18n.t('tooltip.edition')" />
-    </b-field>
+    </b-field> -->
     <MetadataUpload
       v-if="secondaryFileVisible"
       label="Your NFT requires a poster/cover to be seen in gallery. Please upload image (jpg/ png/ gif)"
@@ -54,18 +54,6 @@
       <b-switch v-model="vNsfw" :rounded="false">
         {{ vNsfw ? "NSFW" : "SFW" }}
       </b-switch>
-    </b-field>
-
-    <BalanceInput @input="updateMeta" label="Price" />
-    <b-field grouped :label="$i18n.t('royalty')">
-      <b-numberinput
-        v-model="vRoyalty"
-        placeholder="Percent you get from each secondary sale"
-        expanded
-        :min="1"
-        :max="99"
-      ></b-numberinput>
-      <Tooltip iconsize="is-medium" :label="$i18n.t('tooltip.edition')" />
     </b-field>
   </div>
 </template>
