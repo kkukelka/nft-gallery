@@ -271,11 +271,6 @@ export default class CreateToken extends Mixins(
 
     const calls = [api.tx.nft.mint(...args)]
 
-    if (this.nft.price) {
-      console.log('price', api.tx.marketplace)
-      calls.push(api.tx.marketplace.setPrice(id, alreadyMinted, this.nft.price))
-    }
-
     return [calls]
   }
 

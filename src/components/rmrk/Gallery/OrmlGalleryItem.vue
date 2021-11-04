@@ -266,11 +266,6 @@ export default class GalleryItem extends Mixins(SubscribeMixin) {
         [this.id, this.itemId],
         this.observeOwner
       )
-      this.subscribe(
-        api.query.marketplace.tokenPrices,
-        [this.id, this.itemId],
-        this.observePrice
-      )
     }, 1000)
   }
 
