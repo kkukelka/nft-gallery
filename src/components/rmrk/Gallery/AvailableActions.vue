@@ -31,7 +31,6 @@ import { unpin } from '@/proxy'
 import RmrkVersionMixin from '@/utils/mixins/rmrkVersionMixin'
 import shouldUpdate from '@/utils/shouldUpdate'
 import nftById from '@/queries/nftById.graphql'
-import Null from '@/params/components/Null.vue'
 import NFTUtils, { NFTAction } from '@/components/bsx/NftUtils'
 
 const ownerActions: NFTAction[] = [NFTAction.SEND, NFTAction.CONSUME, NFTAction.DELEGATE, NFTAction.FREEZE]
@@ -74,7 +73,7 @@ const components = {
 export default class AvailableActions extends Mixins(RmrkVersionMixin) {
   @Prop(String) public currentOwnerId!: string;
   @Prop(String) public accountId!: string;
-  @Prop({ type: [String, Null] }) public delegateId!: string;
+  @Prop({ type: [String] }) public delegateId!: string;
   @Prop() public price!: string;
   @Prop(String) public nftId!: string;
   @Prop(String) public collectionId!: string;

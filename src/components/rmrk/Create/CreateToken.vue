@@ -6,7 +6,7 @@
         <Auth />
       </b-field>
       <template v-if="accountId">
-        <b-field grouped :label="$i18n.t('Collection')">
+        <b-field :label="$i18n.t('Collection')" :message="$t('Select collection where do you want mint your token')">
           <b-select
             placeholder="Select a collection"
             v-model="selectedCollection"
@@ -21,11 +21,6 @@
               {{ option.id }} ({{ option.alreadyMinted }})
             </option>
           </b-select>
-          <Tooltip
-            :label="
-              $i18n.t('Select collection where do you want mint your token')
-            "
-          />
         </b-field>
       </template>
       <h6 v-if="selectedCollection" class="subtitle is-6">
@@ -36,6 +31,16 @@
         v-if="selectedCollection"
         v-bind.sync="nft"
       />
+      <b-field>
+        <CollapseWrapper
+          v-if="nft.edition > 1"
+          visible="mint.expert.show"
+          hidden="mint.expert.hide"
+          class="mt-3"
+        >
+          <BasicSwitch class="mt-3" v-model="postfix" label="mint.expert.postfix" />
+        </CollapseWrapper>
+      </b-field>
       <b-field>
         <PasswordInput v-model="password" :account="accountId" />
       </b-field>
@@ -84,7 +89,7 @@
           passiveMessage="I don't want to have carbonless NFT"
         />
       </b-field>
-      <ArweaveUploadSwitch  v-model="arweaveUpload" />
+      <ArweaveUploadSwitch v-model="arweaveUpload" />
     </div>
   </div>
 </template>
@@ -95,26 +100,31 @@ import CreateItem from './CreateItem.vue'
 import Tooltip from '@/components/shared/Tooltip.vue'
 import Support from '@/components/shared/Support.vue'
 import Connector from '@vue-polkadot/vue-api'
-import exec, { execResultValue, txCb, estimate } from '@/utils/transactionExecutor'
+import exec, {
+  execResultValue,
+  txCb,
+  estimate
+} from '@/utils/transactionExecutor'
 import { notificationTypes, showNotification } from '@/utils/notification'
-import {
-  NFT,
-  NFTMetadata,
-  MintNFT,
-  getNftId
-} from '../service/scheme'
+import { NFT, NFTMetadata, MintNFT, getNftId } from '../service/scheme'
 import { pinJson, getKey, revokeKey } from '@/proxy'
 import { unSanitizeIpfsUrl, ipfsToArweave } from '@/utils/ipfs'
 import PasswordInput from '@/components/shared/PasswordInput.vue'
-import NFTUtils from '@/components/bsx/NftUtils'
+import NFTUtils, { basicUpdateFunction } from '@/components/bsx/NftUtils'
 import RmrkVersionMixin from '@/utils/mixins/rmrkVersionMixin'
 import { supportTx, MaybeFile, calculateCost, offsetTx } from '@/utils/support'
 import collectionForMint from '@/queries/bsx/collectionForMint.graphql'
 import TransactionMixin from '@/utils/mixins/txMixin'
 import ChainMixin from '@/utils/mixins/chainMixin'
 import shouldUpdate from '@/utils/shouldUpdate'
+import {
+  nsfwAttribute,
+  offsetAttribute,
+  secondaryFileVisible
+} from './mintUtils'
+import { formatBalance } from '@polkadot/util'
 import { DispatchError } from '@polkadot/types/interfaces'
-import { APIKeys, pinFile as pinFileToIPFS  } from '@/pinata'
+import { APIKeys, pinFile as pinFileToIPFS } from '@/pinata'
 
 interface NFTAndMeta extends NFT {
   meta: NFTMetadata;
@@ -137,7 +147,10 @@ type MintedCollection = {
     Support,
     Money: () => import('@/components/shared/format/Money.vue'),
     Loader: () => import('@/components/shared/Loader.vue'),
-    ArweaveUploadSwitch: () => import('./ArweaveUploadSwitch.vue')
+    ArweaveUploadSwitch: () => import('./ArweaveUploadSwitch.vue'),
+    CollapseWrapper: () =>
+      import('@/components/shared/collapse/CollapseWrapper.vue'),
+    BasicSwitch: () => import('@/components/shared/form/BasicSwitch.vue'),
   }
 })
 export default class CreateToken extends Mixins(
@@ -154,7 +167,6 @@ export default class CreateToken extends Mixins(
     price: 0,
     file: undefined,
     secondFile: undefined,
-    royalty: 0,
   };
   protected collections: MintedCollection[] = [];
   private selectedCollection: MintedCollection | null = null;
@@ -166,6 +178,7 @@ export default class CreateToken extends Mixins(
   private hasCarbonOffset = true;
   private filePrice = 0;
   protected arweaveUpload = false;
+  protected postfix = true;
   protected deposit = '0'
 
   get accountId() {
@@ -263,7 +276,7 @@ export default class CreateToken extends Mixins(
     const { api } = Connector.getInstance()
     const { id, alreadyMinted } = this.selectedCollection!
 
-    const args = NFTUtils.createNFT(id, alreadyMinted, this.accountId, this.nft.royalty, metadata)
+    const args = NFTUtils.createNFT(id, alreadyMinted, this.accountId, 0, metadata)
 
     if (!this.nft.price) {
       return args
@@ -329,9 +342,11 @@ export default class CreateToken extends Mixins(
           res => this.resolveStatus(res.status, true)
         )
       )
-    } catch (e: any) {
-      showNotification(e.toString(), notificationTypes.danger)
-      this.isLoading = false
+    } catch (e) {
+      if (e instanceof Error) {
+        showNotification(e.toString(), notificationTypes.danger)
+        this.isLoading = false
+      }
     }
   }
 
@@ -356,21 +371,19 @@ export default class CreateToken extends Mixins(
 
       meta.image = unSanitizeIpfsUrl(fileHash)
 
-      revokeKey(keys.pinata_api_key)
-        .then(console.log, console.warn)
+      revokeKey(keys.pinata_api_key).then(console.log, console.warn)
 
       // TODO: upload meta to IPFS
       const metaHash = await pinJson(meta)
       return unSanitizeIpfsUrl(metaHash)
-    } catch (e: any) {
-      throw new ReferenceError(e.message)
+    } catch (e) {
+      throw new ReferenceError((e as Error).message)
     }
   }
 
   protected calculateSerialNumber(index: number): string {
     return String(index + this.alreadyMinted + 1).padStart(16, '0')
   }
-
 
   protected onTxError(dispatchError: DispatchError): void {
     const { api } = Connector.getInstance()
@@ -393,7 +406,12 @@ export default class CreateToken extends Mixins(
 
   protected navigateToDetail(nft: NFT, blockNumber: string): void {
     showNotification('You will go to the detail in 2 seconds')
-    const go = () => this.$router.push({ name: 'nftDetail', params: { id: getNftId(nft, blockNumber) }, query: { message: 'congrats' } })
+    const go = () =>
+      this.$router.push({
+        name: 'nftDetail',
+        params: { id: getNftId(nft, blockNumber) },
+        query: { message: 'congrats' }
+      })
     setTimeout(go, 2000)
   }
 }

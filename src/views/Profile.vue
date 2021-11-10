@@ -25,6 +25,12 @@
           </div>
           <div class="subtitle is-size-6">
             <ProfileLink :address="id" :inline="true" :showTwitter="true"/>
+            <a :href="`https://sub.id/#/${id}`" target="_blank" rel="noopener noreferrer" class="is-inline-flex is-align-items-center pt-2">
+              <figure class="image is-24x24 subid__less-margin">
+                <img alt="subid" src="/subid.svg" />
+              </figure>
+              {{ shortendId }}
+            </a>
           </div>
         </div>
         <div class="column is-2">
@@ -37,13 +43,74 @@
           <DonationButton :address="id" style="width: 100%;" />
         </div>
       </div>
-      <div class="column is-2 mb-5 share-mobile ">
-        <Sharing
-          v-if="!sharingVisible"
-          label="Check this awesome Profile on %23KusamaNetwork %23KodaDot"
-          :iframe="iframeSettings"
-        />
-      </div>
+
+      <b-tabs
+        :class="{ 'invisible-tab': sharingVisible }"
+        v-model="activeTab"
+        destroy-on-hide
+        expanded
+        size="is-medium"
+      >
+        <b-tab-item value="nft">
+          <template #header>
+            {{ $t("profile.created") }}
+            <span class="tab-counter" v-if="totalCreated">{{ totalCreated }}</span>
+          </template>
+          <PaginatedCardList
+            :id="id"
+            :query="nftListByIssuer"
+            @change="totalCreated = $event"
+            :account="id"
+            :showSearchBar="true"
+          />
+        </b-tab-item>
+        <b-tab-item
+          :label="`Collections - ${totalCollections}`"
+          value="collection"
+        >
+          <Pagination hasMagicBtn replace :total="totalCollections" v-model="currentCollectionPage" />
+          <GalleryCardList
+            :items="collections"
+            type="collectionDetail"
+            link="rmrk/collection"
+          />
+          <Pagination
+            replace
+            class="pt-5 pb-5"
+            :total="totalCollections"
+            v-model="currentCollectionPage"
+          />
+        </b-tab-item>
+        <b-tab-item value="sold">
+          <template #header>
+            {{ $t("profile.sold") }}
+            <span class="tab-counter" v-if="totalSold">{{ totalSold }}</span>
+          </template>
+          <PaginatedCardList
+            :id="id"
+            :query="nftListSold"
+            @change="totalSold = $event"
+            :account="id"
+          />
+        </b-tab-item>
+        <b-tab-item value="collected">
+          <template #header>
+            {{ $t("profile.collected") }}
+            <span class="tab-counter" v-if="totalCollected">{{ totalCollected }}</span>
+          </template>
+          <PaginatedCardList
+            :id="id"
+            :query="nftListCollected"
+            @change="totalCollected = $event"
+            :account="id"
+          />
+        </b-tab-item>
+
+        <!-- <b-tab-item label="Packs" value="pack">
+          <span>TODO: Reintroduce</span>
+          <GalleryCardList :items="packs" type="packDetail" link="rmrk/pack" />
+        </b-tab-item> -->
+      </b-tabs>
     </div>
     <b-tabs
       :class="{ 'invisible-tab': sharingVisible }"
@@ -135,6 +202,7 @@ import nftListCollected from '@/queries/bsx/nftListCollected.graphql'
 import nftListSold from '@/queries/bsx/nftListSold.graphql'
 import firstNftByIssuer from '@/queries/bsx/firstNftByIssuer.graphql'
 import { tokenIdToRoute } from '@/components/nft/utils'
+import shortAddress from '@/utils/shortAddress'
 
 const components = {
   GalleryCardList: () =>
@@ -205,6 +273,7 @@ export default class Profile extends Vue {
   public activeTab = 'nft';
   public firstNFTData: any = {};
   protected id = '';
+  protected shortendId = '';
   protected isLoading = false;
   protected collections: CollectionWithMeta[] = [];
   protected packs: Pack[] = [];
@@ -240,6 +309,7 @@ export default class Profile extends Vue {
   public checkId() {
     if (this.$route.params.id) {
       this.id = this.$route.params.id
+      this.shortendId = shortAddress(this.id)
     }
   }
 
@@ -389,4 +459,7 @@ export default class Profile extends Vue {
   flex-basis: auto;
 }
 
+.subid__less-margin {
+  margin: auto .5em auto 0;
+}
 </style>

@@ -45,7 +45,6 @@ export interface MintNFT {
   file?: Blob;
   secondFile?: Blob;
   price: string | number;
-  royalty: 0
 }
 
 export interface State {

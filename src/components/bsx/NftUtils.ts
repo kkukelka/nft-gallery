@@ -20,6 +20,8 @@ export const actionResolver: Record<NFTAction, [string, string]> = {
   '': ['',''],
 }
 
+export const basicUpdateFunction = (name: string, index: number): string => `${name} #${index + 1}`
+
 class NFTUtils {
   static createCollection(id: Id, admin: string, metadata: string): [string, string, string] {
     return [String(id), admin, metadata]

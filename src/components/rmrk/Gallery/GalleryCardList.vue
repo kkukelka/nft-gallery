@@ -55,7 +55,7 @@ export default class GalleryCardList extends Vue {
   @Prop() public items!: RmrkType[];
   @Prop(Function) public formatId!: (id: string) => string | Record<string, unknown>;
 
-  protected layout = 'is-one-third-desktop is-one-quarter-tablet'
+  protected layout = 'is-one-third-desktop is-one-third-tablet'
 }
 </script>
 <style>

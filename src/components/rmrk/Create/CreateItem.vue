@@ -7,26 +7,26 @@
       preview
     />
 
-    <b-field grouped :label="$i18n.t('Name')">
-      <b-input
-        placeholder="Name your NFT"
-        v-model="vName"
-        expanded
-        class="mr-0"
-        spellcheck="true"
-      ></b-input>
-      <Tooltip iconsize="is-medium" :label="$i18n.t('tooltip.name')" />
-    </b-field>
-    <b-field :label="$i18n.t('nft.description')" class="mb-0">
-      <b-input
-        v-model="vDescription"
-        maxlength="500"
-        type="textarea"
-        placeholder="Describe your NFT"
-        spellcheck="true"
-      ></b-input>
-    </b-field>
-    <!-- <b-field grouped :label="$i18n.t('Edition')">
+    <BasicInput
+      v-model="vName"
+      :label="$t('mint.nft.name.label')"
+      :message="$t('mint.nft.name.message')"
+      :placeholder="$t('mint.nft.name.placeholder')"
+      expanded
+    />
+
+    <BasicInput
+      v-model="vDescription"
+      maxlength="500"
+      type="textarea"
+      spellcheck="true"
+      class="mb-0"
+      :label="$t('mint.nft.description.label')"
+      :message="$t('mint.nft.description.message')"
+      :placeholder="$t('mint.nft.description.placeholder')"
+    />
+
+    <b-field :label="$i18n.t('Edition')" class="mt-5">
       <b-numberinput
         v-model="vEdition"
         placeholder="1 is minumum"
@@ -34,8 +34,8 @@
         :min="1"
         :max="clickableMax"
       ></b-numberinput>
-      <Tooltip iconsize="is-medium" :label="$i18n.t('tooltip.edition')" />
-    </b-field> -->
+    </b-field>
+
     <MetadataUpload
       v-if="secondaryFileVisible"
       label="Your NFT requires a poster/cover to be seen in gallery. Please upload image (jpg/ png/ gif)"
@@ -50,11 +50,22 @@
       placeholder="Get discovered easier through tags"
     />
 
-    <b-field>
-      <b-switch v-model="vNsfw" :rounded="false">
-        {{ vNsfw ? "NSFW" : "SFW" }}
-      </b-switch>
-    </b-field>
+    <BasicSwitch v-model="vNsfw" label="mint.nfsw" />
+
+    <BalanceInput @input="updateMeta" label="Price" expanded />
+    <b-message
+      v-if="hasPrice"
+      icon="exclamation-triangle"
+      class="mt-3 has-text-primary"
+      title="Additional transaction"
+      type="is-primary"
+      has-icon
+      aria-close-label="Close message"
+    >
+      <span class="has-text-primary"
+        >Setting the price now requires making an additional transaction.</span
+      >
+    </b-message>
   </div>
 </template>
 
@@ -62,7 +73,7 @@
 import { Component, Prop, Vue, PropSync } from 'vue-property-decorator'
 import { Attribute } from '../service/scheme'
 import { resolveMedia } from '../utils'
-import { MediaType } from '../types'
+import { isFileWithoutType, isSecondFileVisible } from './mintUtils'
 
 @Component({
   components: {
@@ -70,7 +81,8 @@ import { MediaType } from '../types'
     BalanceInput: () => import('@/components/shared/BalanceInput.vue'),
     MetadataUpload: () => import('./DropUpload.vue'),
     Tooltip: () => import('@/components/shared/Tooltip.vue'),
-    RoyaltyInput: () => import('@/components/shared/inputs/NumberInput.vue'),
+    BasicInput: () => import('@/components/shared/form/BasicInput.vue'),
+    BasicSwitch: () => import('@/components/shared/form/BasicSwitch.vue'),
   }
 })
 export default class CreateItem extends Vue {
@@ -97,9 +109,9 @@ export default class CreateItem extends Vue {
     return resolveMedia(this.vFile?.type)
   }
 
-  get secondaryFileVisible() {
+  get secondaryFileVisible(): boolean {
     const fileType = this.fileType
-    return ![MediaType.UNKNOWN, MediaType.IMAGE].some(t => t === fileType)
+    return isFileWithoutType(this.vFile, fileType) || isSecondFileVisible(fileType)
   }
 
   get hasPrice() {

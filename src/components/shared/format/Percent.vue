@@ -9,10 +9,10 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 
 @Component
 export default class Percent extends Vue {
-  @Prop({ default: 0 }) readonly value: number | string | undefined;
+  @Prop({ default: 0, type: [String, Number]}) readonly value: number | string | undefined;
   @Prop(Boolean) readonly inline!: boolean;
 
-  get properValue() {
+  get properValue(): number {
     return this.value ? Number(this.value) : 0
   }
 }

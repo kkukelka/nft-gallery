@@ -42,6 +42,7 @@ export default class BalanceInput extends Mixins(ChainMixin) {
   private selectedUnit = 1;
   @Prop({ default: 'balance' }) public label!: string;
   @Prop({ default: true }) public calculate!: boolean;
+  @Prop(Boolean) public expanded!: boolean;
 
   get inputValue(): number {
     return this.value
