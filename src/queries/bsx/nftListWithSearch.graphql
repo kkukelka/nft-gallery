@@ -6,7 +6,8 @@ query nftListWithSearch($first: Int!, $offset: Int, $denyList: [String!], $searc
     first: $first
     offset: $offset
     filter: {
-      issuer: { notIn: $denyList }
+      issuer: { notIn: $denyList },
+      metadata: { includes: "ipfs" },
       and: $search
     }
   ) {

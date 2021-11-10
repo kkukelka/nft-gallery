@@ -53,7 +53,7 @@ import { fetchCollectionMetadata, sanitizeIpfsUrl } from '../utils'
 import Freezeframe from 'freezeframe'
 import 'lazysizes'
 
-import collectionListWithSearch from '@/queries/collectionListWithSearch.graphql'
+import collectionListWithSearch from '@/queries/bsx/collectionListWithSearch.graphql'
 import { getMany, update } from 'idb-keyval'
 
 interface Image extends HTMLImageElement {
