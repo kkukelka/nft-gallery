@@ -1,4 +1,5 @@
 type Id = string | number;
+type Owner = { Id: string }
 
 export enum NFTAction {
   SEND='SEND',
@@ -23,12 +24,13 @@ export const actionResolver: Record<NFTAction, [string, string]> = {
 export const basicUpdateFunction = (name: string, index: number): string => `${name} #${index + 1}`
 
 class NFTUtils {
-  static createCollection(id: Id, admin: string, metadata: string): [string, string, string] {
-    return [String(id), admin, metadata]
+  static createCollection(id: Id, admin: string): [string, Owner] {
+    return [String(id), { Id: admin }]
   }
 
-  static createNFT(classId: Id, id: Id, owner: string, royalty: number, metadata: string)  {
-    return [String(classId), String(id), owner, royalty, metadata]
+
+  static createNFT(classId: Id, id: Id, owner: string): [string, string, Owner] {
+    return [String(classId), String(id), { Id: owner }]
   }
 
   static getActionParams(selectedAction: NFTAction, classId: Id, id: Id, meta: string) {

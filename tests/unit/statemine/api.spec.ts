@@ -54,13 +54,13 @@ describe('Basilisk NFT pallet', (): void => {
   it('Can construct collection', async () => {
     const cb = api.tx.nft.createClass
 
-    const args = NFTUtils.createCollection(0, alice.address, CANARY_IPFS)
+    const args = NFTUtils.createCollection(0, alice.address)
     expect(() => build(cb, args)).to.not.throw()
   })
 
   it('Can construct NFT', async () => {
     const cb = api.tx.nft.mint
-    const args = NFTUtils.createNFT(0, 0, alice.address, 10, CANARY_IPFS)
+    const args = NFTUtils.createNFT(0, 0, alice.address)
     expect(() => build(cb, args)).to.not.throw()
   })
 

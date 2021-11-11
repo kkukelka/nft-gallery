@@ -15,19 +15,16 @@ describe('NFTUtils', (): void => {
   })
 
   it('can create collection params', () => {
-    const [id, admin, metadata] = NFTUtils.createCollection(0, alice.address, CANARY_IPFS)
+    const [id, admin] = NFTUtils.createCollection(0, alice.address)
     expect(id).to.be.equal('0')
-    expect(admin).to.be.equal(alice.address)
-    expect(metadata).to.be.equal(CANARY_IPFS)
+    expect(admin.Id).to.be.equal(alice.address)
   })
 
   it('can create token params', () => {
-    const [collectionId, id, owner, royalty, metadata] = NFTUtils.createNFT(0, 0, alice.address, 10, CANARY_IPFS)
+    const [collectionId, id, owner] = NFTUtils.createNFT(0, 0, alice.address)
     expect(collectionId).to.be.equal('0')
     expect(id).to.be.equal('0')
-    expect(owner).to.be.equal(alice.address)
-    expect(royalty).to.be.equal(10)
-    expect(metadata).to.be.equal(CANARY_IPFS)
+    expect(owner.Id).to.be.equal(alice.address)
   })
 
   // it('can correctly choose meta', async () => {

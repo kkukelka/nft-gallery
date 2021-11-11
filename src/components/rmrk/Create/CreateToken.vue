@@ -276,7 +276,7 @@ export default class CreateToken extends Mixins(
     const { api } = Connector.getInstance()
     const { id, alreadyMinted } = this.selectedCollection!
 
-    const args = NFTUtils.createNFT(id, alreadyMinted, this.accountId, 0, metadata)
+    const args = NFTUtils.createNFT(id, alreadyMinted, this.accountId)
 
     if (!this.nft.price) {
       return args
