@@ -323,9 +323,13 @@ export default class GalleryItem extends Mixins(SubscribeMixin) {
         image: sanitizeIpfsUrl(nft.image || '')
       }
 
+
+      // TODO: add attributes as traits
+      const { attributes, ...rest } = nft
+
       this.nft = {
         ...this.nft,
-        ...nft,
+        ...rest,
         ...nftData,
         collectionId: this.id,
       }
@@ -352,6 +356,8 @@ export default class GalleryItem extends Mixins(SubscribeMixin) {
     if (!nFTEntity) {
       return
     }
+
+    console.log('nft', nFTEntity)
 
     this.nft = {
       ...this.nft,
