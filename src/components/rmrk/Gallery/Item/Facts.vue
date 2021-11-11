@@ -25,18 +25,15 @@
             <b>{{ $t('collection') }}: </b>{{ nft.collectionId }}
           </p>
           <p class="subtitle is-size-6">
-            <b>DEPOSIT: </b>{{ nft.deposit }}
+            <b>DEPOSIT: </b>
+            <Money :value="nft.deposit" inline />
           </p>
           <ArweaveLink v-if="meta.image_ar" :id="meta.image_ar" label="image" />
           <ArweaveLink v-if="nft.animationArId" :id="nft.animationArId" label="animated" />
-          <p v-if="imageId" class="subtitle is-size-6"  >
-            <b>IPFS</b>:
-            <ol>
-              <li v-for="gw in gwList"
-              :key="gw">
-                <a :href="gw+imageId" target="_blank" rel="noopener noreferrer">Gateway</a>
-              </li>
-            </ol>
+          <p v-if="imageId" class="subtitle is-size-6">
+            <b>IPFS: </b>
+            <br />
+            <a :href="imageId" target="_blank" rel="noopener noreferrer">Check on IPFS</a>
           </p>
           <div>
           <p class="subtitle is-size-6 has-text-warning has-text-weight-bold">
@@ -51,11 +48,12 @@
 
 <script lang="ts" >
 import { Component, Prop, Vue } from 'vue-property-decorator'
-import { extractCid } from '@/utils/ipfs'
-import { UniqueNFT as NFT, NFTMetadata, UniqueAttribute } from '../../service/scheme'
+import { UniqueNFT as NFT, NFTMetadata } from '../../service/scheme'
 import { emptyObject } from '@/utils/empty'
+import { sanitizeIpfsUrl } from '../../utils'
 const components = {
-  ArweaveLink: () => import('@/components/shared/ArweaveLink.vue')
+  ArweaveLink: () => import('@/components/shared/ArweaveLink.vue'),
+  Money: () => import('@/components/shared/format/Money.vue')
 }
 
 @Component({ components })
@@ -78,7 +76,7 @@ export default class Facts extends Vue {
 
 
   get imageId() {
-    return extractCid(this.meta.image)
+    return sanitizeIpfsUrl(this.meta.image || '')
   }
 
 // public created() {

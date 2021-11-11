@@ -33,11 +33,12 @@ class NFTUtils {
     return [String(classId), String(id), { Id: owner }]
   }
 
-  static getActionParams(selectedAction: NFTAction, classId: Id, id: Id, meta: string) {
+  static getActionParams(selectedAction: NFTAction, classId: Id, id: Id, meta: string): Id[] {
     switch (selectedAction) {
     case NFTAction.SEND:
     case NFTAction.CONSUME:
     case NFTAction.DELEGATE:
+    case NFTAction.REVOKE:
       return [classId, id, meta]
     case NFTAction.FREEZE:
     case NFTAction.THAW:
@@ -52,12 +53,14 @@ class NFTUtils {
 
   }
 
-  static correctMeta(selectedAction: NFTAction, meta: string, currentOwner: string): string {
+  static correctMeta(selectedAction: NFTAction, meta: string, currentOwner: string, delegate: string): string {
     switch (selectedAction) {
     case NFTAction.SEND:
     case NFTAction.DELEGATE:
       return meta
     case NFTAction.CONSUME:
+      return delegate
+    case NFTAction.REVOKE:
       return currentOwner
     case NFTAction.FREEZE:
     case NFTAction.THAW:

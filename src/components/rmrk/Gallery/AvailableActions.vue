@@ -259,9 +259,9 @@ export default class AvailableActions extends Mixins(RmrkVersionMixin) {
     }
   }
   getArgs() {
-    const { selectedAction, collectionId, nftId, currentOwnerId, meta } = this
+    const { selectedAction, collectionId, nftId, currentOwnerId, meta, delegateId } = this
 
-    return NFTUtils.getActionParams(selectedAction, collectionId, nftId, NFTUtils.correctMeta(selectedAction, String(meta), currentOwnerId))
+    return NFTUtils.getActionParams(selectedAction, collectionId, nftId, NFTUtils.correctMeta(selectedAction, String(meta), currentOwnerId, delegateId))
   }
 
   protected unpinNFT() {
