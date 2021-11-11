@@ -234,7 +234,9 @@
         "placeholder": "Enter NFT description",
         "message": "Description of your NFT. Markdown is supported"
       }
-    }
+    },
+    "showOnChainAttr": "Show on-chain attributes",
+    "hideOnChainAttr": "Hide on-chain attributes"
   },
   "tooltip": {
     "symbol": "The symbol which is attributed to the NFT: for an example, Kusama is labeled as KSM",

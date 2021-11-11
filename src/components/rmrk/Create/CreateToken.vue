@@ -41,6 +41,14 @@
           <BasicSwitch class="mt-3" v-model="postfix" label="mint.expert.postfix" />
         </CollapseWrapper>
       </b-field>
+      <CustomAttributeInput
+        v-show="selectedCollection"
+        :max="5"
+        v-model="attributes"
+        class="mb-3"
+        visible="mint.showOnChainAttr"
+        hidden="mint.hideOnChainAttr"
+      />
       <b-field>
         <PasswordInput v-model="password" :account="accountId" />
       </b-field>
@@ -125,6 +133,7 @@ import {
 import { formatBalance } from '@polkadot/util'
 import { DispatchError } from '@polkadot/types/interfaces'
 import { APIKeys, pinFile as pinFileToIPFS } from '@/pinata'
+import { Attribute } from '../types'
 
 interface NFTAndMeta extends NFT {
   meta: NFTMetadata;
@@ -151,6 +160,7 @@ type MintedCollection = {
     CollapseWrapper: () =>
       import('@/components/shared/collapse/CollapseWrapper.vue'),
     BasicSwitch: () => import('@/components/shared/form/BasicSwitch.vue'),
+    CustomAttributeInput: () => import('@/components/rmrk/Create/CustomAttributeInput.vue')
   }
 })
 export default class CreateToken extends Mixins(
@@ -180,6 +190,8 @@ export default class CreateToken extends Mixins(
   protected arweaveUpload = false;
   protected postfix = true;
   protected deposit = '0'
+  protected depositPerByte = BigInt(0);
+  protected attributes: Attribute[] = [];
 
   get accountId() {
     return this.$store.getters.getAuthAddress
@@ -198,7 +210,10 @@ export default class CreateToken extends Mixins(
 
   private fetchDeposit() {
     const { api } = Connector.getInstance()
-    this.deposit = api.consts.uniques.instanceDeposit.toString()
+    const baseDeposit = api.consts.uniques.instanceDeposit.toBigInt()
+    const metadataDeposit = api.consts.uniques.metadataDepositBase.toBigInt()
+    this.depositPerByte = api.consts.uniques.depositPerByte.toBigInt()
+    this.deposit = (baseDeposit + metadataDeposit).toString()
   }
 
   public async fetchCollections() {
@@ -312,7 +327,10 @@ export default class CreateToken extends Mixins(
       const create = api.tx.uniques.mint(id, alreadyMinted, this.accountId)
       // Option to freeze metadata
       const meta = api.tx.uniques.setMetadata(id, alreadyMinted, metadata, false)
-      const args = [[create, meta]]
+      const attributes = this.attributes.map(a =>
+        api.tx.uniques.setAttribute(id, String(alreadyMinted), a.trait_type, String(a.value))
+      )
+      const args = [[create, meta, ...attributes]]
 
 
       const tx = await exec(
