@@ -36,8 +36,8 @@
             <a :href="imageId" target="_blank" rel="noopener noreferrer">Check on IPFS</a>
           </p>
           <div>
-          <p class="subtitle is-size-6 has-text-warning has-text-weight-bold">
-            DANGER ZONE!
+          <p class="subtitle is-size-6 has-text-weight-bold" @click="removeMeta">
+            <a class="has-text-danger">Clear Metadata!</a>
           </p>
 
           </div>
@@ -74,9 +74,17 @@ export default class Facts extends Vue {
     return this.meta.attributes?.filter(({ trait_type }) => !trait_type).map(({ value }) => value)
   }
 
+  get isOwner() {
+    return this.nft.currentOwner === this.$store.state.account
+  }
+
 
   get imageId() {
     return sanitizeIpfsUrl(this.meta.image || '')
+  }
+
+  protected removeMeta() {
+    console.log('removeMeta')
   }
 
 // public created() {
