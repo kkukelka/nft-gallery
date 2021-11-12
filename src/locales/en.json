@@ -379,6 +379,10 @@
         "show": "Show me the description",
         "hide": "Hide the description"
       }
+    },
+    "attribute": {
+      "show": "Show NFT attributes",
+      "hide": "Hide attributes"
     }
   }
 }

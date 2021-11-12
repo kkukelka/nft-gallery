@@ -87,12 +87,14 @@
               {{ meta.description }}
               <CollapseWrapper
                 v-if="attributes && attributes.length"
-                visible="attribute.show"
-                hidden="attribute.hide"
+                visible="collapse.attribute.show"
+                hidden="collapse.attribute.hide"
               >
                 <div v-for="(attr, index) in attributes" :key="index">
+                  <RemoveItem v-show="isOwner" :value="attr.key" @input="removeAttribute" bottom />
                   <span class="text-bold">{{ attr.key }}: </span
                   ><span>{{ attr.value }}</span>
+
                 </div>
               </CollapseWrapper>
             </p>
@@ -114,9 +116,6 @@
               <Money :value="nft.price" inline />
             </div>
             <div class="label">{{ $t("price") }}</div>
-            <div class="subtitle is-size-6" v-if="royalty">
-              ⊃ royalty <b><Percent :value="royalty" inline/></b>
-            </div>
           </div>
 
           <template v-if="detailVisible && !nft.burned">
@@ -188,10 +187,15 @@ import { get, set } from 'idb-keyval'
 import { MediaType } from '../types'
 import axios from 'axios'
 import Connector from '@vue-polkadot/vue-api'
-import { BalanceOf, InstanceDetails, InstanceMetadata } from '@polkadot/types/interfaces'
+import {
+  BalanceOf,
+  InstanceDetails,
+  InstanceMetadata
+} from '@polkadot/types/interfaces'
 import SubscribeMixin from '@/utils/mixins/subscribeMixin'
 import nftById from '@/queries/bsx/nftById.graphql'
 import { createTokenId } from '@/components/nft/utils'
+import MetaTransactionMixin from '@/utils/mixins/metaTxMixin'
 
 @Component<GalleryItem>({
   metaInfo() {
@@ -234,10 +238,12 @@ import { createTokenId } from '@/components/nft/utils'
     Sharing: () => import('@/components/rmrk/Gallery/Item/Sharing.vue'),
     Appreciation: () => import('./Appreciation.vue'),
     MediaResolver: () => import('../Media/MediaResolver.vue'),
-    CollapseWrapper: () => import('@/components/shared/collapse/CollapseWrapper.vue'),
+    CollapseWrapper: () =>
+      import('@/components/shared/collapse/CollapseWrapper.vue'),
+    RemoveItem: () => import('@/components/shared/RemoveIcon.vue')
   }
 })
-export default class GalleryItem extends Mixins(SubscribeMixin) {
+export default class GalleryItem extends Mixins(SubscribeMixin, MetaTransactionMixin) {
   private id = '';
   private nftId: string | number = '';
   private passsword = '';
@@ -266,7 +272,7 @@ export default class GalleryItem extends Mixins(SubscribeMixin) {
         [this.id, this.itemId],
         this.observeOwner
       )
-    }, 1000)
+    }, 3000)
   }
 
   observePrice(data: Option<BalanceOf>) {
@@ -323,7 +329,6 @@ export default class GalleryItem extends Mixins(SubscribeMixin) {
         image: sanitizeIpfsUrl(nft.image || '')
       }
 
-
       // TODO: add attributes as traits
       const { attributes, ...rest } = nft
 
@@ -331,7 +336,7 @@ export default class GalleryItem extends Mixins(SubscribeMixin) {
         ...this.nft,
         ...rest,
         ...nftData,
-        collectionId: this.id,
+        collectionId: this.id
       }
     } catch (e) {
       showNotification(`${e}`, notificationTypes.warn)
@@ -420,6 +425,10 @@ export default class GalleryItem extends Mixins(SubscribeMixin) {
     this.$buefy.toast.open(message)
   }
 
+  get isOwner(): boolean {
+    return this.accountId === this.nft.currentOwner
+  }
+
   get hasPrice() {
     return true
   }
@@ -439,6 +448,37 @@ export default class GalleryItem extends Mixins(SubscribeMixin) {
   protected handleAction(deleted: boolean) {
     if (deleted) {
       showNotification('INSTANCE REMOVED', notificationTypes.warn)
+    }
+  }
+
+  protected removeAttribute(key: string): void {
+    this.initTransactionLoader()
+    console.log('removeAttribute', key)
+    this.submitRemove(key)
+  }
+
+  protected async submitRemove(key: string | boolean): Promise<void> {
+    try {
+      const { api } = Connector.getInstance()
+      const { id, itemId } = this
+      const nftId = itemId || 0
+
+      const isMeta = typeof key === 'boolean'
+
+      const cb = isMeta
+        ? api.tx.uniques.clearMetadata
+        : api.tx.uniques.clearAttribute
+      const args = isMeta ? [id, nftId] : [id, nftId, key]
+
+      console.log('submitRemove', cb)
+      this.howAboutToExecute(this.accountId, cb, args, (blockNumber) => {
+        showNotification(`[NFT] ${isMeta ? 'metadata' : key} removed in block ${blockNumber}`, notificationTypes.success)
+      })
+
+    } catch (e) {
+      showNotification(`${e}`, notificationTypes.warn)
+      console.warn(e)
+      this.isLoading = false
     }
   }
 }
