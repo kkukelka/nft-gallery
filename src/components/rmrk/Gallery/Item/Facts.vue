@@ -36,7 +36,7 @@
             <a :href="imageId" target="_blank" rel="noopener noreferrer">Check on IPFS</a>
           </p>
           <div>
-          <p class="subtitle is-size-6 has-text-weight-bold" @click="removeMeta">
+          <p class="subtitle is-size-6 has-text-weight-bold is-unselectable" @click="removeMeta">
             <a class="has-text-danger">Clear Metadata!</a>
           </p>
 
