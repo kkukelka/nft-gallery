@@ -114,7 +114,7 @@ export default class Collections extends Vue {
   private currentValue = 1;
   private total = 0;
 
-  get isLoading() {
+  get isLoading(): boolean {
     return this.$apollo.queries.collection.loading
   }
 

@@ -69,7 +69,7 @@ import { emptyObject } from '@/utils/empty'
 import { cast } from '@/utils/cast'
 import { notificationTypes, showNotification } from '@/utils/notification'
 import { Component, Vue } from 'vue-property-decorator'
-import { fetchCollectionMetadata } from '../utils'
+import { fetchCollectionMetadata, sanitizeIpfsUrl } from '../utils'
 import isShareMode from '@/utils/isShareMode'
 
 import Connector from '@vue-polkadot/vue-api'
@@ -100,7 +100,7 @@ export default class OrmlCollection extends Vue {
   private formater = tokenIdToRoute;
 
   get image() {
-    return this.collection.image || '/koda300x300.svg'
+    return  sanitizeIpfsUrl(this.collection.image || '') || '/koda300x300.svg'
   }
 
   get description() {
@@ -134,7 +134,7 @@ export default class OrmlCollection extends Vue {
       this.loadMagic()
       // const { api } = Connector.getInstance();
       // this.subscribe(api.query.uniques.asset, [this.id, this.itemId], this.observeOwner)
-    }, 1000)
+    }, 3000)
   }
 
   private async fetchCollection() {
