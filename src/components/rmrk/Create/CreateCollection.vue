@@ -63,6 +63,13 @@
         :message="$t('mint.collection.description.message')"
         :placeholder="$t('mint.collection.description.placeholder')"
       />
+      <CustomAttributeInput
+        :max="5"
+        v-model="attributes"
+        class="mb-3"
+        visible="mint.showOnChainAttr"
+        hidden="mint.hideOnChainAttr"
+      />
       <b-field>
         <PasswordInput v-model="password" :account="accountId" />
       </b-field>
@@ -108,6 +115,7 @@ import { generateId } from '@/components/rmrk/service/Consolidator'
 import { supportTx, calculateCost } from '@/utils/support'
 import TransactionMixin from '@/utils/mixins/txMixin'
 import existingCollectionList from '@/queries/bsx/existingCollectionList.graphql'
+import { Attribute } from '../types'
 
 const components = {
   Auth: () => import('@/components/shared/Auth.vue'),
@@ -118,6 +126,7 @@ const components = {
   Loader: () => import('@/components/shared/Loader.vue'),
   BasicInput: () => import('@/components/shared/form/BasicInput.vue'),
   Money: () => import('@/components/shared/format/Money.vue'),
+  CustomAttributeInput: () => import('@/components/rmrk/Create/CustomAttributeInput.vue')
 }
 
 @Component({ components })
@@ -136,6 +145,8 @@ export default class CreateCollection extends Mixins(
   protected unlimited = true;
   protected collectionDeposit = '';
   protected id = '0'
+  protected attributes: Attribute[] = [];
+
   get accountId() {
     return this.$store.getters.getAuthAddress
   }
@@ -236,7 +247,10 @@ export default class CreateCollection extends Mixins(
       const create = api.tx.uniques.create(randomId, this.accountId)
       // Option to freeze metadata
       const meta = api.tx.uniques.setClassMetadata(randomId, metadata, false)
-      const args = [[create, meta]]
+      const attributes = this.attributes.map(a =>
+        api.tx.uniques.setAttribute(randomId, null, a.trait_type, String(a.value))
+      )
+      const args = [[create, meta, ...attributes]]
       const tx = await exec(
         this.accountId,
         '',
