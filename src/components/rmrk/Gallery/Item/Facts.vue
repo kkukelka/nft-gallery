@@ -36,7 +36,7 @@
             <a :href="imageId" target="_blank" rel="noopener noreferrer">Check on IPFS</a>
           </p>
           <div>
-          <p class="subtitle is-size-6 has-text-weight-bold is-unselectable" @click="removeMeta">
+          <p v-show="isOwner" class="subtitle is-size-6 has-text-weight-bold is-unselectable" @click="removeMeta">
             <a class="has-text-danger">Clear Metadata!</a>
           </p>
 
@@ -47,7 +47,7 @@
 </template>
 
 <script lang="ts" >
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Emit, Prop, Vue } from 'vue-property-decorator'
 import { UniqueNFT as NFT, NFTMetadata } from '../../service/scheme'
 import { emptyObject } from '@/utils/empty'
 import { sanitizeIpfsUrl } from '../../utils'
@@ -70,21 +70,26 @@ export default class Facts extends Vue {
     'https://dweb.link/ipfs/'
   ];
 
-  get tags() {
+  get tags(): any[] {
     return this.meta.attributes?.filter(({ trait_type }) => !trait_type).map(({ value }) => value)
   }
 
-  get isOwner() {
-    return this.nft.currentOwner === this.$store.state.account
+  get isOwner(): boolean {
+    return this.nft.currentOwner === this.accountId
+  }
+
+  get accountId(): string {
+    return this.$store.getters.getAuthAddress
   }
 
 
-  get imageId() {
+  get imageId(): string {
     return sanitizeIpfsUrl(this.meta.image || '')
   }
 
-  protected removeMeta() {
-    console.log('removeMeta')
+  @Emit('input')
+  protected removeMeta(): true {
+    return true
   }
 
 // public created() {

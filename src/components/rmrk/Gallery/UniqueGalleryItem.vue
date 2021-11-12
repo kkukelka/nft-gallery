@@ -166,7 +166,7 @@
           <Sharing />
           <br />
           <template v-if="detailVisible">
-            <Facts :nft="nft" :meta="meta" />
+            <Facts :nft="nft" :meta="meta" @input="submitRemove" />
           </template>
         </div>
       </div>
@@ -454,13 +454,13 @@ export default class GalleryItem extends Mixins(SubscribeMixin, MetaTransactionM
   }
 
   protected removeAttribute(key: string): void {
-    this.initTransactionLoader()
     console.log('removeAttribute', key)
     this.submitRemove(key)
   }
 
   protected async submitRemove(key: string | boolean): Promise<void> {
     try {
+      this.initTransactionLoader()
       const { api } = Connector.getInstance()
       const { id, itemId } = this
       const nftId = itemId || 0
