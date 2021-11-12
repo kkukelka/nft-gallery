@@ -1,5 +1,6 @@
  <template>
   <div class="wrapper section no-padding-desktop gallery-item mb-6">
+    <Loader v-model="isLoading" :status="status" />
     <div class="container">
       <b-message type="is-primary" v-if="message">
         <div class="columns">
@@ -240,7 +241,8 @@ import MetaTransactionMixin from '@/utils/mixins/metaTxMixin'
     MediaResolver: () => import('../Media/MediaResolver.vue'),
     CollapseWrapper: () =>
       import('@/components/shared/collapse/CollapseWrapper.vue'),
-    RemoveItem: () => import('@/components/shared/RemoveIcon.vue')
+    RemoveItem: () => import('@/components/shared/RemoveIcon.vue'),
+    Loader: () => import('@/components/shared/Loader.vue'),
   }
 })
 export default class GalleryItem extends Mixins(SubscribeMixin, MetaTransactionMixin) {
