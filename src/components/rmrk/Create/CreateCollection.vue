@@ -241,8 +241,8 @@ export default class CreateCollection extends Mixins(
       const { api } = Connector.getInstance()
       const cb = api.tx.utility.batchAll
 
-      // const randomId = await this.generateNewCollectionId()
-      const randomId = Number(this.id)
+      const randomId = await this.generateNewCollectionId()
+      // const randomId = Number(this.id)
 
       const create = api.tx.uniques.create(randomId, this.accountId)
       // Option to freeze metadata
