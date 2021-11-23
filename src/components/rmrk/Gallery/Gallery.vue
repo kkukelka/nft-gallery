@@ -122,7 +122,7 @@ const components = {
         },
         {
           property: 'og:image',
-          content: 'https://nft.kodadot.xyz/kodadot_gallery.jpg'
+          content: this.defaultGalleryMetaImage
         },
         {
           property: 'og:description',
@@ -138,7 +138,7 @@ const components = {
         },
         {
           property: 'twitter:image',
-          content: 'https://nft.kodadot.xyz/kodadot_gallery.jpg'
+          content: this.defaultGalleryMetaImage
         }
       ]
     }
@@ -158,6 +158,13 @@ export default class Gallery extends Vue {
   private placeholder = '/koda300x300.svg';
   private currentValue = 1;
   private total = 0;
+
+  get defaultGalleryMetaImage(): string {
+    const url = new URL(window.location.href)
+    return (
+      `${url.protocol}//${url.hostname}/Kodadot_Card_Gallery.jpg`
+    )
+  }
 
   get isLoading() {
     return this.$apollo.queries.nfts.loading

@@ -25,12 +25,14 @@
 <script lang="ts" >
 import { Component, Mixins, Prop} from 'vue-property-decorator'
 import Connector from '@vue-polkadot/vue-api'
-import exec, { execResultValue, txCb } from '@/utils/transactionExecutor'
+import exec, { execResultValue, txCb, sign, send } from '@/utils/transactionExecutor'
 import { notificationTypes, showNotification } from '@/utils/notification'
 import { unpin } from '@/proxy'
 import RmrkVersionMixin from '@/utils/mixins/rmrkVersionMixin'
 import shouldUpdate from '@/utils/shouldUpdate'
 import nftById from '@/queries/nftById.graphql'
+import verificationGuard from '@/queries/rmrk/verificationGuard.graphql'
+import { PendingTransaction } from '../service/scheme'
 import NFTUtils, { NFTAction } from '@/components/bsx/NftUtils'
 
 const ownerActions: NFTAction[] = [NFTAction.SEND, NFTAction.CONSUME, NFTAction.DELEGATE, NFTAction.FREEZE]
@@ -75,10 +77,11 @@ export default class AvailableActions extends Mixins(RmrkVersionMixin) {
   @Prop(String) public accountId!: string;
   @Prop({ type: [String] }) public delegateId!: string;
   @Prop() public price!: string;
-  @Prop(String) public nftId!: string;
+  @Prop() public nftId!: string;
   @Prop(String) public collectionId!: string;
   @Prop(Boolean) public frozen!: boolean;
   @Prop({ type: Array, default: () => [] }) public ipfsHashes!: string[];
+
   private selectedAction: NFTAction = NFTAction.NONE;
   private meta: string | number = '';
   protected isLoading = false;
@@ -180,13 +183,39 @@ export default class AvailableActions extends Mixins(RmrkVersionMixin) {
     })
 
     const { data: {nFTEntity} } = nft
-
-    if (nFTEntity.currentOwner !== this.currentOwnerId || nFTEntity.burned || nFTEntity.price === 0 || nFTEntity.price !== this.price ) {
+    // DEV: nFTEntity.price == 0 is a feature to handle the buy flow
+    if (nFTEntity.currentOwner !== this.currentOwnerId || nFTEntity.burned || nFTEntity.price == 0 || nFTEntity.price !== this.price ) {
       showNotification(
         `[RMRK::${this.selectedAction}] Owner changed or NFT does not exist`,
         notificationTypes.warn
       )
       throw new ReferenceError('NFT has changed')
+    }
+
+  }
+
+  protected async isTransactionPending(): Promise<void> {
+    try {
+      const nft = await this.$apollo.query<{ nfts: PendingTransaction[] }>({
+        client: 'rmrkApolloClient',
+        query: verificationGuard,
+        variables: {
+          id: this.nftId
+        },
+      })
+
+      const { data: {nfts} } = nft
+      const pendingTransaction = nfts.find(({ id }) => id === this.nftId)
+
+      if (pendingTransaction?.txPending && pendingTransaction?.txCaller !== this.accountId) {
+        showNotification(
+          `[RMRK::${this.selectedAction}] Transaction is pending`,
+          notificationTypes.warn
+        )
+        throw new ReferenceError('Transaction is pending')
+      }
+    } catch (e) {
+      console.log('error', e)
     }
 
   }
@@ -251,7 +280,6 @@ export default class AvailableActions extends Mixins(RmrkVersionMixin) {
           this.status = ''
         }
       ))
-
     } catch (e) {
       showNotification(`[ERR] ${e}`, notificationTypes.danger)
       console.error(e)

@@ -1,14 +1,18 @@
 <template>
   <div>
-    <div class="level my-4 collection" v-if="nfts">
+    <div class="level my-4 collection">
       <div class="level-item has-text-centered">
-        <div>
-          <p class="title">{{ collectionLength }}</p>
-          <p class="heading">Items</p>
+        <b-skeleton position="is-centered" width="50%" :active="!nfts.length" size="is-small"></b-skeleton>
+        <div v-if="nfts.length">
+          <p class="title">
+            {{ listedCount }} ⊆ {{ collectionLength }}
+          </p>
+          <p class="heading">Listed / Total Items</p>
         </div>
       </div>
       <div class="level-item has-text-centered">
-        <div>
+        <b-skeleton position="is-centered" width="50%" :active="!nfts.length" size="is-small"></b-skeleton>
+        <div v-if="nfts.length">
           <p class="title">
             <Money :value="collectionFloorPrice" inline />
           </p>
@@ -16,7 +20,8 @@
         </div>
       </div>
       <div class="level-item has-text-centered">
-        <div>
+        <b-skeleton position="is-centered" width="50%" :active="!nfts.length" size="is-small"></b-skeleton>
+        <div v-if="nfts.length">
           <p class="title">
             <Money :value="collectionTradedVolumeNumber" inline />
           </p>
@@ -24,28 +29,23 @@
         </div>
       </div>
       <div class="level-item has-text-centered">
-        <div>
-          <p class="title">{{ collectionSoldedNFT }}</p>
-          <p class="heading">Owned</p>
+        <b-skeleton position="is-centered" width="50%" :active="!nfts.length" size="is-small"></b-skeleton>
+        <div v-if="nfts.length">
+          <p class="title">{{ uniqueOwnerCount }} ⊆ {{ differentOwnerCount }}</p>
+          <p class="heading">Unique / Owners</p>
         </div>
       </div>
       <div class="level-item has-text-centered">
-        <div>
-          <p class="title">
-            {{
-              collectionSoldedNFT
-                ? (
-                    collectionLength / collectionSoldedNFT
-                  ).toFixed(4)
-                : 0
-            }}
-          </p>
+        <b-skeleton position="is-centered" width="50%" :active="!nfts.length" size="is-small"></b-skeleton>
+        <div v-if="nfts.length">
+          <p class="title">{{ disributionCount }}</p>
           <p class="heading">Distribution</p>
         </div>
       </div>
 
       <div class="level-item has-text-centered">
-        <div>
+        <b-skeleton position="is-centered" width="50%" :active="!nfts.length" size="is-small"></b-skeleton>
+        <div v-if="nfts.length">
           <p class="title">
             <Money
               :value="collectionDailyTradedVolumeNumber"
@@ -62,7 +62,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import { Interaction, NFT } from '@/components/rmrk/service/scheme'
-import { after, getVolume, pairListBuyEvent } from '@/utils/math'
+import { after, getVolume, pairListBuyEvent, uniqueCount } from '@/utils/math'
 import { subDays } from 'date-fns'
 
 const components = {
@@ -85,16 +85,32 @@ export default class extends Vue {
     return this.nfts.length
   }
 
-  get collectionFloorPrice(): number {
-    return Math.min(
-      ...this.nfts
-        .map((nft) => Number(nft.price))
-        .filter((price) => price > 0)
-    )
+  get listedCount(): number {
+    return this.onlyListedNfts.length
   }
 
-  get collectionSoldedNFT(): number {
-    return this.nfts.filter(this.differentOwner).length
+  get onlyListedNfts(): number[] {
+    return this.nfts.map((nft) => Number(nft.price)).filter((price) => price > 0)
+  }
+
+  get collectionFloorPrice(): number {
+    return Math.min(...this.onlyListedNfts)
+  }
+
+  get disributionCount(): number {
+    return Number((this.differentOwnerCount / (this.uniqueOwnerCount || 1)).toFixed(4))
+  }
+
+  get uniqueOwnerCount(): number {
+    return uniqueCount(this.tokensWithDifferentOwner.map(nft => nft.currentOwner))
+  }
+
+  get differentOwnerCount(): number {
+    return this.tokensWithDifferentOwner.length
+  }
+
+  get tokensWithDifferentOwner(): NFT[] {
+    return this.nfts.filter(this.differentOwner)
   }
 
   get collectionTradedVol(): number {

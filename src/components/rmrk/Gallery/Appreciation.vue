@@ -1,5 +1,5 @@
 <template>
-  <div class="nft-appreciation__main is-flex">
+  <div class="nft-appreciation__main is-flex pb-3">
     <Loader v-model="isLoading" :status="status" />
     <IndexerGuard>
       <b-button
@@ -157,7 +157,7 @@ export default class Appreciation extends Mixins(RmrkVersionMixin) {
 
 .emoji-picker {
   --ep-color-bg: #000 !important;
-  --ep-color-border: #db2980 !important;
+  --ep-color-border: db2980 !important;
   --ep-color-sbg: #000 !important;
   --ep-color-active: #db2980 !important;
   border-width: $button-border-width !important;
