@@ -50,7 +50,7 @@
         :to="{ name: 'nft'}">
         {{ $t('Gallery') }}
       </b-navbar-item>
-      <b-navbar-item
+      <!-- <b-navbar-item
         tag="router-link"
         :to="{ name: 'spotlight'}">
         {{ $t('Spotlight') }}
@@ -59,7 +59,7 @@
         tag="router-link"
         :to="{ name: 'series'}">
         Series
-      </b-navbar-item>
+      </b-navbar-item> -->
       <b-navbar-dropdown
           arrowless
           collapsible
@@ -74,11 +74,11 @@
             :to="{ name: 'rmrkFaq'}">
             {{ $t('FAQ') }}
           </b-navbar-item>
-          <b-navbar-item
+          <!-- <b-navbar-item
             tag="router-link"
             :to="{ name: 'admin'}">
             {{ $t('Admin') }}
-          </b-navbar-item>
+          </b-navbar-item> -->
           <b-navbar-item
             tag="router-link"
             :to="{ name: 'transfer'}">
