@@ -31,6 +31,7 @@
               network="twitter"
               :url="realworldFullPath"
               :title="label"
+              :hashtags="hashtags"
               twitter-user="KodaDot"
             >
               <b-icon size="is-large" pack="fab" icon="twitter" />
@@ -118,11 +119,13 @@ const components = {
   components,
 })
 export default class Sharing extends Vue {
-  @Prop({ default: 'Check this cool NFT on #KusamaNetwork #KodaDot' }) label!: string
+  @Prop({ default: 'Check out this cool NFT on KodaDot' }) label!: string
   @Prop({ default: () => emptyIframe }) iframe!: IFrame
   @Prop(Boolean) onlyCopyLink!: boolean
 
   private active = false
+
+  private hashtags = ['KusamaNetwork', 'KodaDot']
 
   get helloText(): string {
     return this.label
